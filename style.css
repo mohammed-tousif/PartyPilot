@@ -1745,3 +1745,17 @@ select.form-control {
     flex-direction: column;
   }
 }
+
+/* Success button variant (used for final order state). Mirrors primary spacing/sizing. */
+.btn--success {
+  background: var(--color-green-600, #16a34a);
+  color: var(--color-white);
+  border: 1px solid var(--color-green-700, #15803d);
+}
+.btn--success:hover {
+  filter: brightness(0.95);
+}
+.btn--success:disabled {
+  opacity: 0.7;
+  cursor: default;
+}

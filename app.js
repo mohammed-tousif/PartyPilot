@@ -17,7 +17,7 @@ let appData = {
       name: "Birthday Deluxe",
       category: "Birthday",
       price: 1499,
-      image: "https://unsplash.com/photos/time-lapse-photography-of-two-women-splashing-glitters-LO1lToLGGFA?w=400",
+      image: "https://images.unsplash.com/photo-1516826957135-700dedea698c?w=400",
       description: "Premium birthday setup with balloons, backdrop, lighting and cake table",
       items: ["30 Balloons", "Photo Backdrop", "LED String Lights", "Cake Table Setup", "Party Props"],
       setup_time: "60 minutes",
@@ -156,8 +156,36 @@ let currentView = {
   admin: 'dashboard'
 };
 
+
+// Persistence helpers
+function saveState() {
+  try {
+    const state = {
+      orders: appData.orders,
+      packages: appData.packages,
+      delivery_partners: appData.delivery_partners,
+      admin_stats: appData.admin_stats,
+      cart: appData.cart
+    };
+    localStorage.setItem('partyPilotState', JSON.stringify(state));
+  } catch (e) { /* ignore quota errors */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('partyPilotState');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    if (state.orders) appData.orders = state.orders;
+    if (state.packages) appData.packages = state.packages;
+    if (state.delivery_partners) appData.delivery_partners = state.delivery_partners;
+    if (state.admin_stats) appData.admin_stats = state.admin_stats;
+    if (state.cart) appData.cart = state.cart;
+  } catch (e) { /* ignore parse errors */ }
+}
 // Initialize Application
 document.addEventListener('DOMContentLoaded', function() {
+  loadState();
   initializeApp();
   loadCustomerPackages();
   loadCustomerOrders();
@@ -192,14 +220,20 @@ function initializeApp() {
 }
 
 // Set minimum delivery date (tomorrow)
+
 function setMinDeliveryDate() {
   const deliveryDateInput = document.getElementById('delivery-date');
-  if (deliveryDateInput) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowISO = tomorrow.toISOString().split('T')[0];
-    deliveryDateInput.min = tomorrowISO;
-    deliveryDateInput.value = tomorrowISO; // Set default value to tomorrow
+  if (!deliveryDateInput) return;
+  const dt = new Date();
+  dt.setHours(0,0,0,0);
+  dt.setDate(dt.getDate() + 1);
+  const yyyy = dt.getFullYear();
+  const mm = String(dt.getMonth()+1).padStart(2,'0');
+  const dd = String(dt.getDate()).padStart(2,'0');
+  const localDate = `${yyyy}-${mm}-${dd}`;
+  deliveryDateInput.min = localDate;
+  if (!deliveryDateInput.value) {
+    deliveryDateInput.value = localDate;
   }
 }
 
@@ -373,24 +407,26 @@ function closePackageModal() {
   document.getElementById('package-modal').classList.add('hidden');
 }
 
-function addToCartDirect(packageId) {
-  const package = appData.packages.find(p => p.id === packageId);
-  if (!package) return;
 
+function addToCartDirect(packageId) {
+  const pkg = appData.packages.find(p => p.id === packageId);
+  if (!pkg) return;
+  // Enforce single-item cart for consistency with order model
   const existingItem = appData.cart.find(item => item.id === packageId);
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
-    appData.cart.push({
+    // Replace cart with the selected package as a single line item
+    appData.cart = [{
       id: packageId,
-      name: package.name,
-      price: package.price,
+      name: pkg.name,
+      price: pkg.price,
       quantity: 1
-    });
+    }];
   }
-
   updateCartCount();
-  showToast('success', 'Added to Cart', `${package.name} added to cart successfully!`);
+  showToast('success', 'Added to Cart', `${pkg.name} added to cart`);
+  saveState();
 }
 
 function addToCart() {
@@ -506,8 +542,9 @@ function placeOrder() {
     created_at: new Date().toISOString()
   };
 
-  appData.orders.push(newOrder);
+  
   appData.cart = [];
+  saveState();
   
   // Update stats
   appData.admin_stats.total_orders_today++;
@@ -786,10 +823,14 @@ function getNextActionButton(status, orderId) {
 }
 
 function updateOrderStatus(orderId, newStatus) {
-  const order = appData.orders.find(o => o.id === orderId);
+  
+  // persist before UI updates
+  saveState();
+const order = appData.orders.find(o => o.id === orderId);
   if (!order) return;
 
   order.status = newStatus;
+  saveState();
 
   // Update partner earnings if order is completed
   if (newStatus === 'setup_complete') {
@@ -1004,6 +1045,7 @@ function addPackage() {
   };
 
   appData.packages.push(newPackage);
+  saveState();
 
   showLoading();
   setTimeout(() => {
@@ -1023,6 +1065,7 @@ function editPackage(packageId) {
 function deletePackage(packageId) {
   if (confirm('Are you sure you want to delete this package?')) {
     appData.packages = appData.packages.filter(p => p.id !== packageId);
+  saveState();
     loadAdminPackages();
     loadCustomerPackages();
     showToast('success', 'Package Deleted', 'Package has been deleted successfully!');
@@ -1045,13 +1088,15 @@ function togglePartnerStatus(partnerId) {
   const partner = appData.delivery_partners.find(p => p.id === partnerId);
   if (partner) {
     partner.status = partner.status === 'active' ? 'offline' : 'active';
+  saveState();
     if (partner.status === 'active') {
       appData.admin_stats.active_partners++;
     } else {
       appData.admin_stats.active_partners = Math.max(0, appData.admin_stats.active_partners - 1);
     }
     
-    loadAdminPartners();
+    saveState();
+  loadAdminPartners();
     loadAdminDashboard();
     showToast('success', 'Status Updated', `Partner status updated to ${partner.status}`);
   }
@@ -1094,3 +1139,24 @@ function showToast(type, title, message) {
     }, 300);
   }, 4000);
 }
+
+// Global ESC handler to close open modals without changing UI
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const modals = [
+    document.getElementById('cart-modal'),
+    document.getElementById('checkout-modal'),
+    document.getElementById('package-details-modal'),
+    document.getElementById('add-package-modal')
+  ];
+  let closed = false;
+  modals.forEach(m => {
+    if (m && !m.classList.contains('hidden')) {
+      m.classList.add('hidden');
+      closed = true;
+    }
+  });
+  if (closed) {
+    showToast('info', 'Closed', 'Dialog closed');
+  }
+});
