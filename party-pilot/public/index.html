@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>party-pilot</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="app-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <i class="fas fa-birthday-cake"></i><span>party-pilot</span>
+      </div>
+      <div class="nav-switches">
+        <button class="nav-switch active" data-app="customer"><i class="fas fa-user"></i>Customer</button>
+        <button class="nav-switch" data-app="partner"><i class="fas fa-truck"></i>Partner</button>
+        <button class="nav-switch" data-app="admin"><i class="fas fa-cog"></i>Admin</button>
+      </div>
+      <button class="btn-cart" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-count">0</span></button>
+    </div>
+  </nav>
+
+  <!-- CUSTOMER APP -->
+  <div id="customer-app" class="app-container active">
+    <div class="hero">
+      <h1>Make Every Celebration Special</h1>
+      <p>Premium decoration packages delivered & set up at your doorstep</p>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-category="all">All</button>
+      <button class="filter-btn" data-category="Birthday">Birthday</button>
+      <button class="filter-btn" data-category="Anniversary">Anniversary</button>
+      <button class="filter-btn" data-category="Surprise">Surprise</button>
+    </div>
+
+    <div class="packages-grid" id="packages-grid"></div>
+
+    <section class="panel">
+      <h2>My Orders</h2>
+      <div id="customer-orders-list" class="orders-list"></div>
+    </section>
+  </div>
+
+  <!-- PARTNER APP -->
+  <div id="partner-app" class="app-container">
+    <header class="panel">
+      <h2>Welcome, Ravi Kumar</h2>
+      <div class="muted">Rating 4.8 • 145 deliveries • ₹850 today</div>
+    </header>
+    <section class="panel">
+      <h3>Available Orders</h3>
+      <div id="available-orders" class="orders-list"></div>
+    </section>
+    <section class="panel">
+      <h3>Active Delivery</h3>
+      <div id="active-delivery" class="delivery-card"></div>
+    </section>
+  </div>
+
+  <!-- ADMIN APP -->
+  <div id="admin-app" class="app-container">
+    <section class="panel">
+      <h2>Admin Dashboard</h2>
+      <div id="admin-stats" class="dashboard-stats"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">
+        <h3>Packages</h3>
+        <button class="btn btn--primary" id="add-package-btn"><i class="fas fa-plus"></i> Add Package</button>
+      </div>
+      <div id="admin-packages-table" class="table"></div>
+    </section>
+    <section class="panel">
+      <h3>Orders</h3>
+      <div id="admin-orders-table" class="table"></div>
+    </section>
+    <section class="panel">
+      <h3>Partners</h3>
+      <div id="admin-partners-table" class="table"></div>
+    </section>
+  </div>
+
+  <!-- CART MODAL -->
+  <div id="cart-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Shopping Cart</h3><button class="modal-close" onclick="toggleCart()">&times;</button></div>
+      <div class="modal-body">
+        <div id="cart-items"></div>
+        <div class="cart-total" id="cart-total">Total: ₹0</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="toggleCart()">Continue Shopping</button>
+        <button class="btn btn--primary" id="checkout-btn" onclick="proceedToCheckout()" disabled>Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT -->
+  <div id="checkout-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Checkout</h3><button class="modal-close" onclick="closeCheckout()">&times;</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Delivery Date</label><input type="date" class="form-control" id="delivery-date"></div>
+        <div class="form-group">
+          <label class="form-label">Time Slot</label>
+          <select class="form-control" id="time-slot">
+            <option value="">Select Time</option>
+            <option>10:00 AM - 11:00 AM</option>
+            <option>2:00 PM - 3:00 PM</option>
+            <option>6:00 PM - 7:00 PM</option>
+            <option>7:00 PM - 8:00 PM</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Address</label><textarea class="form-control" id="delivery-address" placeholder="Enter full address"></textarea></div>
+        <div class="form-group"><label class="form-label">Special Instructions</label><textarea class="form-control" id="special-instructions"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--secondary" onclick="closeCheckout()">Cancel</button>
+        <button class="btn btn--primary" onclick="placeOrder()">Place Order</button>
+      </div>
+    </div>
+  </div>
+<!-- ADD PACKAGE MODAL -->
+<div id="add-package-modal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add Package</h3>
+      <button class="modal-close" onclick="closeAddPackage()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Name</label><input id="pkg-name" class="form-control"></div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select id="pkg-category" class="form-control">
+          <option>Birthday</option><option>Anniversary</option><option>Surprise</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Price</label><input id="pkg-price" type="number" class="form-control"></div>
+      <div class="form-group"><label class="form-label">Image URL</label><input id="pkg-image" class="form-control"></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea id="pkg-desc" class="form-control"></textarea></div>
+      <div class="form-group"><label class="form-label">Items (comma separated)</label><input id="pkg-items" class="form-control" placeholder="Balloons, Candles..."></div>
+      <div class="form-group"><label class="form-label">Setup Time</label><input id="pkg-setup" class="form-control" placeholder="45 minutes"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn--secondary" onclick="closeAddPackage()">Cancel</button>
+      <button class="btn btn--primary" onclick="savePackage()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE ORDER STATUS MODAL -->
+<div id="status-modal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header"><h3>Change Status</h3><button class="modal-close" onclick="closeStatusModal()">&times;</button></div>
+    <div class="modal-body">
+      <select id="new-status" class="form-control">
+        <option value="confirmed">Confirmed</option>
+        <option value="accepted">Accepted</option>
+        <option value="in_transit">In Transit</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn--secondary" onclick="closeStatusModal()">Close</button>
+      <button class="btn btn--primary" onclick="applyStatusChange()">Apply</button>
+    </div>
+  </div>
+</div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
