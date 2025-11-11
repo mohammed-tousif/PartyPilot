@@ -95,3 +95,25 @@
   background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
   border: 1px solid rgba(255,255,255,0.15);
 }
+.btn {
+  display: inline-block;
+  padding: 14px 32px;
+  border-radius: 12px;
+  background: var(--accent, #4b64ff);
+  color: #fff;            /* 👈 Fix: force text visible */
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  opacity: 1;
+}
+
+.btn.outline {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  color: #fff;           /* 👈 Fix */
+}
