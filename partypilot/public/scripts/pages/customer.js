@@ -1,7 +1,31 @@
 import { api } from '../api.js';
 import { toast } from '../main.js';
 
+function token(){ return localStorage.getItem('token'); }
+if(!token()) location.href = '/login-customer.html';
+
 const cart = [];
+
+let userId = null;
+
+// socket connect after /profile/me
+(async function init() {
+  try {
+    const me = await api('/api/profile/me');
+    const user = me.user ?? me;
+    userId = user.id || user._id;
+    connectOrdersSocket(userId);
+
+    if (!user.profile || !user.profile.fullName) {
+      show('profile');
+    } else {
+      loadPackages();
+      loadOrders();
+    }
+  } catch (e) {
+    show('profile');
+  }
+})();
 
 async function loadPackages() {
   const { packages } = await api('/api/packages');
@@ -30,17 +54,38 @@ function renderCart() {
 }
 
 async function loadOrders() {
-  try {
-    const { orders } = await api('/api/orders/my');
-    const box = document.getElementById('orders');
-    if (!orders.length) return (box.textContent = 'No orders yet.');
-    box.innerHTML = orders.map(o => `<div class="card" style="margin-bottom:12px;">
-      <div><strong>Order:</strong> ${o._id}</div>
-      <div>Status: ${o.status}</div>
-      <div>Paid: ₹${o.payment.amountPaid} / Total: ₹${o.payment.totalAmount}</div>
-    </div>`).join('');
-  } catch (e) { /* ignore until wired */ }
+  show('orders');
+  const { orders } = await api('/api/orders/my');
+  const list = document.getElementById('orderList');
+  if (!orders.length) { list.textContent = 'No orders yet.'; return; }
+
+  list.innerHTML = orders.map(renderOrderCard).join('');
+  list.addEventListener('click', async (e) => {
+    const readyBtn = e.target.closest('[data-ready]');
+    if (readyBtn) {
+      const id = readyBtn.dataset.ready;
+      await api(`/api/orders/${id}/status`, { method: 'POST', body: { status: 'ready_for_pickup' } });
+      toast('Marked ready for pickup');
+      loadOrders();
+    }
+  }, { once: true });
 }
+
+function renderOrderCard(o) {
+  const flow = ['received','accepted','partner_reached','setup_complete','ready_for_pickup','picked_up'];
+  const timeline = flow.map(s => `<span class="badge ${o.status===s?'state-active':''}">${s.replaceAll('_',' ')}</span>`).join(' ➜ ');
+
+  const readyAllowed = o.status === 'setup_complete';
+  return `<div class="card">
+    <div class="flex" style="justify-content:space-between;">
+      <div><strong>Order</strong> ${o._id}</div>
+      <div>Paid ₹${o.payment.amountPaid} / ₹${o.payment.totalAmount}</div>
+    </div>
+    <div class="timeline">${timeline}</div>
+    ${readyAllowed ? `<button class="btn small" data-ready="${o._id}" style="margin-top:10px;">Mark Ready for Pickup</button>` : ''}
+  </div>`;
+}
+
 
 document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();

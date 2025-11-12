@@ -92,3 +92,25 @@ button { cursor: pointer; font: inherit; }
   .reveal, .reveal.in { transition: none; transform: none; }
   .btn { transition: none; }
 }
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(var(--blur));
+  background: linear-gradient(180deg, rgba(12,14,30,0.6), rgba(12,14,30,0.35));
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+}
+.input, select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-md);
+  padding: 12px 14px; color: var(--text);
+}
+.input:focus, select:focus, button:focus-visible, .btn:focus-visible {
+  outline: none; box-shadow: var(--ring);
+}
+.btn.small { padding: 8px 12px; font-size: 14px; border-radius: 10px; }

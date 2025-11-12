@@ -1,0 +1,4 @@
+.section-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); }
+.order-card .actions { display:flex; gap:10px; margin-top:10px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.kpi { padding:16px; border-radius:14px; background: rgba(255,255,255,.06); text-align:center;}

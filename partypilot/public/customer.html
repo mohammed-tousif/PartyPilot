@@ -39,14 +39,20 @@
         <button id="pay100" class="btn outline">Pay Full & Order</button>
       </div>
     </section>
-
+<!--
     <section class="card" style="margin-top:24px;">
       <h2>My Orders</h2>
       <div id="orders"></div>
     </section>
+-->
+    <section id="screen-orders" class="screen hidden">
+      <h2>My Orders</h2>
+      <div id="orderList" class="grid"></div>
+    </section>
+
   </main>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/socket.io/socket.io.js"></script>
   <script type="module" src="/scripts/pages/customer.js"></script>
 </body>
 </html>

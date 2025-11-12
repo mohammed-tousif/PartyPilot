@@ -57,3 +57,9 @@
     --glass: rgba(255, 255, 255, 0.6);
   }
 }
+:root {
+  --glass: rgba(255,255,255,0.10);
+  --glass-strong: rgba(255,255,255,0.16);
+  --blur: 14px;
+  --ring: 0 0 0 3px color-mix(in oklab, var(--primary) 32%, transparent);
+}
