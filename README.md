@@ -1,15 +1,13 @@
 # PartyPilot
 
-partypilot the decoration solution
+BEFORE RUNNING CHECK YOUR DIR
+IT SHOULD BE LIKE
+C:\......\partypilot\partypilot>
 
-IN THE party-pilot DIR RUN THE CODE
-STEPS->
-RUN THIS CODES IN THE POWERSHELL WITHOUT ANY ERRORS
-cd party-pilot
-npm run seed
-npm run dev
+AFTER THAT RUN THIS COMMANT
 
-AFTER THIS SUCCESSFUL RUN DEV
+cd backend
+npm start
 
-FOLLOW THIS URL
---> http://localhost:8080
+AFTER THAT GO TO YOUR BROWSER
+(http://localhost:3000)
