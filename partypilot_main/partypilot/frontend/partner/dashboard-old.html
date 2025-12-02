@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Dashboard - PartyPilot</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <header class="modern-header">
+        <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
+            <a href="/" class="logo-modern">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="20" r="18" fill="url(#gradient1)"/>
+                    <path d="M20 10L25 18H15L20 10Z" fill="white"/>
+                    <circle cx="20" cy="25" r="5" fill="white"/>
+                    <defs><linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#FF6B9D"/><stop offset="1" stop-color="#C06FFF"/></linearGradient></defs>
+                </svg>
+                <span>PartyPilot Partner</span>
+            </a>
+            <button class="btn btn-outline" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+    <div style="height: 20px;"></div>
+
+    <nav class="dashboard-nav">
+        <div class="container nav-tabs">
+            <div class="nav-tab active" data-target="my-orders">My Active Orders</div>
+            <div class="nav-tab" data-target="new-orders">New Order Pool</div>
+            </div>
+    </nav>
+
+    <main class="container dashboard-content">
+        <section id="my-orders" class="content-section active">
+            <h2>My Active Orders</h2>
+            <div class="dashboard-grid" id="my-orders-grid">
+                </div>
+        </section>
+
+        <section id="new-orders" class="content-section">
+            <h2>New Available Orders</h2>
+            <div class="dashboard-grid" id="new-orders-grid">
+                </div>
+        </section>
+    </main>
+
+    <script src="/partner/partner.js"></script>
+</body>
+</html>

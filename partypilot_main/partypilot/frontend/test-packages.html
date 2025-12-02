@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Packages - PartyPilot</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        body { padding: 2rem; background: #f5f5f5; }
+        .status { padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .package-card { background: white; padding: 1rem; margin: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .package-card h3 { color: #333; margin: 0.5rem 0; }
+        .package-card .price { font-size: 1.5rem; color: #FF6B9D; font-weight: bold; }
+        .package-card .category { display: inline-block; padding: 0.25rem 0.75rem; background: #E8E8E8; border-radius: 12px; font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+    <h1>Package Test Page</h1>
+    <div id="status" class="status">Loading packages...</div>
+    <div id="packages-container"></div>
+
+    <script>
+        async function loadPackages() {
+            const statusDiv = document.getElementById('status');
+            const container = document.getElementById('packages-container');
+            
+            try {
+                statusDiv.textContent = 'Fetching packages from API...';
+                const response = await fetch('/api/orders/packages');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const packages = await response.json();
+                statusDiv.className = 'status success';
+                statusDiv.textContent = `✓ Successfully loaded ${packages.length} packages!`;
+                
+                if (packages.length === 0) {
+                    container.innerHTML = '<p>No packages found in database.</p>';
+                    return;
+                }
+                
+                container.innerHTML = packages.map(pkg => `
+                    <div class="package-card">
+                        <span class="category">${pkg.category}</span>
+                        <h3>${pkg.name}</h3>
+                        <div class="price">$${pkg.price}</div>
+                        <p>${pkg.description}</p>
+                        <p><strong>Duration:</strong> ${pkg.duration} | <strong>Capacity:</strong> ${pkg.capacity} people</p>
+                        <p><strong>Rating:</strong> ${pkg.rating || 0} ⭐ (${pkg.ratingCount || 0} reviews)</p>
+                    </div>
+                `).join('');
+                
+                console.log('Packages loaded:', packages);
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `✗ Error: ${error.message}`;
+                container.innerHTML = `<p>Failed to load packages. Check console for details.</p>`;
+                console.error('Error loading packages:', error);
+            }
+        }
+        
+        // Load packages when page loads
+        loadPackages();
+    </script>
+</body>
+</html>

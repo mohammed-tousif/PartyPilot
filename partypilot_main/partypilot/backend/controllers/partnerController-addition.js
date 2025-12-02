@@ -1,0 +1,40 @@
+// Add this to backend/controllers/partnerController.js at the end
+
+// @desc    Update partner location
+// @route   PUT /api/partner/location
+// @access  Private (Partner)
+exports.updateLocation = async (req, res) => {
+  const { latitude, longitude } = req.body;
+  
+  if (!latitude || !longitude) {
+    return res.status(400).json({ message: 'Latitude and longitude required' });
+  }
+
+  try {
+    const Partner = require('../models/Partner');
+    const partner = await Partner.findById(req.user.id);
+    
+    if (!partner) {
+      return res.status(404).json({ message: 'Partner not found' });
+    }
+
+    partner.location = {
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      lastUpdated: new Date()
+    };
+
+    await partner.save();
+
+    // Broadcast location to admin and relevant customers
+    req.io.to('adminRoom').emit('partnerLocationUpdate', {
+      partnerId: partner._id,
+      companyName: partner.companyName,
+      location: partner.location
+    });
+
+    res.json({ message: 'Location updated', location: partner.location });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
